@@ -16,7 +16,7 @@ const passportJWT = require('./config/passport_jwt_strategy');
 app.use(express.json());
 
 //Route middleware
-app.use('/api',require('./routes/index'));
+app.use('/hospital/api',require('./routes/index'));
 
 
 app.listen(port,function(err){
