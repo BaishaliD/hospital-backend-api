@@ -1,4 +1,8 @@
 const Report = require('../models/report_model');
+
+//List of available status
+//Every status is assigned a number (status code) corresponding to the index of the following array
+//For example, status code '0' corresponds to 'Negative status, status code '1' corresponds to 'Travelled - Quarantine', and so on
 const statusCodeList = ["Negative", "Travelled - Quarantine", "Symptoms - Quarantine", "Positive - Admit"];
 
 module.exports.reports = async function (req, res) {
@@ -7,9 +11,9 @@ module.exports.reports = async function (req, res) {
         let report = await Report.find({ statusCode: req.params.status },"createdAt -_id").populate('createdBy',"name -_id").populate('patient',"name phone -_id");
 
         return res.status(200).json({
-            'status': 'Success',
-            'report_status': statusCodeList[req.params.status],
-            'data': report
+            status: 'Success',
+            report_status: statusCodeList[req.params.status],
+            data: report
         })
     }
     catch (err) {

@@ -1,5 +1,9 @@
 const Patient = require('../models/patient_model');
 const Report = require('../models/report_model');
+
+//List of available status
+//Every status is assigned a number (status code) corresponding to the index of the following array
+//For example, status code '0' corresponds to 'Negative status, status code '1' corresponds to 'Travelled - Quarantine', and so on
 const statusCodeList = ["Negative", "Travelled - Quarantine", "Symptoms - Quarantine", "Positive - Admit"];
 
 //Register a new patient
@@ -10,10 +14,10 @@ module.exports.register = async function (req, res) {
     try {
 
         //check if the patient already exists using the phone number
-        //if the patient laready exists, return the data of the patient
 
         const patient = await Patient.findOne({ phone: req.body.phone });
 
+        //if the patient already exists, return the data of the patient
         if (patient) {
             return res.status(200).json({
                 status: 'Success',
@@ -29,11 +33,12 @@ module.exports.register = async function (req, res) {
 
         //if the patient doesn't exist, register the patient
         const newPatient = await Patient.create({
-            'phone': req.body.phone,
-            'name': req.body.name,
-            createdBy: req.user
+            phone: req.body.phone,
+            name: req.body.name,
+            createdBy: req.user //Store the logged in doctor who registered the patient
         });
 
+        //Return information of the newly registered patient
         return res.status(200).json({
             status: 'Success',
             message: 'Patient registered',
@@ -58,14 +63,13 @@ module.exports.createReport = async function (req, res) {
     try {
 
         //use patient's id to check if patient is registered
-        //const patient = await Patient.findOne({ '_id': req.params.id });
 
         const patient = await Patient.findOne({ 'phone': req.params.id });
 
         if (!patient) {
             return res.status(400).json({
-                'status': 'Failure',
-                'message': 'Patient not registered'
+                status: 'Failure',
+                message: 'Patient not registered'
             })
         };
 
@@ -78,9 +82,6 @@ module.exports.createReport = async function (req, res) {
 
         });
 
-        //patient.reports.push(report);
-        //patient.save();
-
         await Patient.updateOne({ 'phone': req.params.id }, {
             //Add the id of the report to the corresponding Patient document
             $push: {
@@ -89,8 +90,8 @@ module.exports.createReport = async function (req, res) {
         });
 
         return res.status(201).json({
-            'status': 'Success',
-            'message': 'New report created'
+            status: 'Success',
+            message: 'New report created'
         })
 
     } catch (err) {
@@ -101,33 +102,33 @@ module.exports.createReport = async function (req, res) {
 };
 
 //get all the reports of a patient
-//this route is unprotected, i.i, it can be accessed by anyone without authentication
+//this route is unprotected, i.e, it can be accessed by anyone without authentication
 
 module.exports.allReports = async function (req, res) {
 
     try {
 
 
-        //use patient's id to check if patient is registered
+        //use patient's phone to check if patient is registered
         const patient = await Patient.findOne({ 'phone': req.params.id }, "name phone");
 
         console.log(patient);
 
         if (!patient) {
             return res.status(400).json({
-                'status': 'Failure',
-                'message': 'Patient not registered'
+                status: 'Failure',
+                message: 'Patient not registered'
             })
         };
 
-        let reports = await Report.find({'patient': patient._id}, "status createdAt createdBy -_id").sort('createdAt').populate('createdBy',"name -_id");
+        //fetch all the reports of a patient, sort the reports chronologically and populate the doctor object
+        let reports = await Report.find({ 'patient': patient._id }, "status createdAt createdBy -_id")
+            .sort('createdAt')
+            .populate('createdBy', "name -_id");
 
-        
-        console.log("REPORTS ",reports);
 
         return res.json(200, {
             message: "All Reports",
-           // data: reports
             data: {
                 patient: patient,
                 reports: reports
@@ -137,7 +138,7 @@ module.exports.allReports = async function (req, res) {
 
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ 'message': 'Internal server error', err });
+        return res.status(500).json({ message: 'Internal server error', err });
     }
 
 
