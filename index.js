@@ -9,9 +9,6 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const passportJWT = require('./config/passport_jwt_strategy');
 
-
-
-
 //Middlewares
 app.use(express.json());
 
