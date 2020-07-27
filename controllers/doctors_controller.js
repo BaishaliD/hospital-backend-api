@@ -2,6 +2,10 @@ const Doctor = require('../models/doctor_model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+module.exports.hello = function(){
+    return 'hello world';
+}
+
 //Register a doctor
 module.exports.register = async function (req, res) {
 
@@ -62,11 +66,14 @@ module.exports.register = async function (req, res) {
 //Login a registered doctor using passport jwt authentication
 module.exports.login = async function (req, res) {
 
+    console.log("request ",req.body);
+
     try {
+
         //check if user exists (using username)
         const user = await Doctor.findOne({ username: req.body.username });
         if (!user) {
-            return res.status(400).json({
+            return res.status(401).json({
                 status: 'Failure',
                 message: 'Incorrect username or password'
             })
@@ -75,7 +82,7 @@ module.exports.login = async function (req, res) {
         //check if password is correct
         const passwordMatch = await bcrypt.compare(req.body.password, user.password);
         if (!passwordMatch) {
-            return res.status(400).json({
+            return res.status(401).json({
                 status: 'Failure',
                 message: 'Incorrect username or password'
             })
@@ -83,7 +90,7 @@ module.exports.login = async function (req, res) {
 
         //create and assign a token, and return the JWT as json
         const token = jwt.sign(user.toJSON(), process.env.TOKEN_SECRET);
-        res.header('auth-token', token).json({
+        res.status(200).json({
             status: 'Success',
             JWT_token: token
         });
