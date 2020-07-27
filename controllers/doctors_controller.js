@@ -66,8 +66,6 @@ module.exports.register = async function (req, res) {
 //Login a registered doctor using passport jwt authentication
 module.exports.login = async function (req, res) {
 
-    console.log("request ",req.body);
-
     try {
 
         //check if user exists (using username)

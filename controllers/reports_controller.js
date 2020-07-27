@@ -10,6 +10,17 @@ module.exports.reports = async function (req, res) {
     try {
         let report = await Report.find({ statusCode: req.params.status },"createdAt -_id").populate('createdBy',"name -_id").populate('patient',"name phone -_id");
 
+
+        var s = req.params.status;
+
+        if(!(s==0||s==1||s==2||s==3)){
+            return res.status(400).json({
+                status: 'Failure',
+                message: 'Invalid status code'
+            })
+        }
+
+
         return res.status(200).json({
             status: 'Success',
             report_status: statusCodeList[req.params.status],

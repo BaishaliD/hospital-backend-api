@@ -39,7 +39,7 @@ module.exports.register = async function (req, res) {
         });
 
         //Return information of the newly registered patient
-        return res.status(200).json({
+        return res.status(201).json({
             status: 'Success',
             message: 'Patient registered',
             data: {
@@ -73,7 +73,17 @@ module.exports.createReport = async function (req, res) {
             })
         };
 
-        //if patient is registered, create a report
+        //if patient is registered, check if status code is valid
+        var s = req.body.status;
+
+        if(!(s==0||s==1||s==2||s==3)){
+            return res.status(400).json({
+                status: 'Failure',
+                message: 'Invalid status code'
+            })
+        }
+
+        //if patient is registered and status code is valid, create report
         const report = await Report.create({
             statusCode: req.body.status,
             status: statusCodeList[req.body.status],
@@ -112,8 +122,6 @@ module.exports.allReports = async function (req, res) {
         //use patient's phone to check if patient is registered
         const patient = await Patient.findOne({ 'phone': req.params.id }, "name phone");
 
-        console.log(patient);
-
         if (!patient) {
             return res.status(400).json({
                 status: 'Failure',
@@ -127,7 +135,7 @@ module.exports.allReports = async function (req, res) {
             .populate('createdBy', "name -_id");
 
 
-        return res.json(200, {
+        return res.status(200).json({
             message: "All Reports",
             data: {
                 patient: patient,
